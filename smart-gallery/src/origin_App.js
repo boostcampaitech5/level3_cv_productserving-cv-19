@@ -5,7 +5,6 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { Camera, ImageUtil } from "react-native-pytorch-core";
 import classifyImage from './src/components/imageClassifier';
 import ImageGrid from '@baronha/react-native-image-grid';
-import encodeImage from "./src/components/imageEncoder";
 import { openPicker } from '@baronha/react-native-multiple-image-picker';
 
 
@@ -64,7 +63,7 @@ export default function App() {
       if (response) {
         for (var i = 0; i < response.length; i++) {
           const img = await ImageUtil.fromFile(response[i].path);
-          const classifyResult = await encodeImage(img);
+          const classifyResult = await classifyImage(img);
           console.log("setTopClass 처리 안한 classifyResult", classifyResult);
           setTopClass(classifyResult); //이게 뭘하는건지 잘 모르겟음
           console.log("setTopClass 처리 한 topClass", topClass);
