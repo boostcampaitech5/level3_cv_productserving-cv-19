@@ -60,95 +60,52 @@ function preprocess(image, size = 224) {
   image = normalize(image);
   return image;
 }
-/*
-const _tokenizer = new SimpleTokenizer();
-
-function tokenize(texts, contextLength = 77, truncate = false) {
-  const sotToken = _tokenizer.encoder["<|startoftext|>"];
-  const eotToken = _tokenizer.encoder["<|endoftext|>"];
-  const allToken = texts.map((text) => [
-    sotToken,
-    ..._tokenizer.encode(text),
-    eotToken,
-  ]);
-
-  const result = torch.zeros(allTokens.length, contextLength, torch.int);
-
-  for (let i = 0; i < allTokens.length; i++) {
-    const tokens = allTokens[i];
-
-    if (tokens.length > contextLength) {
-      if (truncate) {
-        tokens.splice(
-          contextLength - 1,
-          tokens.length - contextLength,
-          eotToken
-        );
-      } else {
-        throw new Error(
-          `Input ${texts[i]} is too long for context length ${contextLength}`
-        );
-      }
-    }
-
-    result[i].narrow(0, 0, tokens.length).copy_(torch.tensor(tokens));
-  }
-
-  return result;
-}
-*/
 
 // The classifyImage function that will process an image and return the top
 // class label
-export default async function encodeImage(image) {
+export default async function encodeImage(image, text) {
   // Get image width and height
-  const width = image.getWidth();
-  const height = image.getHeight();
+  console.log(text);
+  console.log(image);
   let textTensor = null;
-  // axios.get("http://101.101.219.90:30003/tokenize/hello").then((response) => {
-  //   // response.data => [1,512]
-  //   console.log(response.data[0][0]);
-  //   console.log(typeof response.data[0][0]);
-  //   text_tensor = torch.tensor(response.data);
-  //   console.log(text_tensor.shape);
-  // });
   const response = await axios.get(
-    "http://101.101.219.90:30003/tokenize/hello"
+    `http://101.101.219.90:30003/tokenize/${text}`
   );
   // response.data => [1,512]
-  console.log(response.data[0][0]);
-  console.log(typeof response.data[0][0]);
   textTensor = torch.tensor(response.data);
   console.log(textTensor.shape);
-  // Convert image to blob, which is a byte representation of the image
-  // in the format height (H), width (W), and channels (C), or HWC for short
-  const blob = media.toBlob(image);
 
-  // Get a tensor from image the blob and also define in what format
-  // the image blob is.
-  let tensor = torch.fromBlob(blob, [height, width, 3]);
-
-  // Rearrange the tensor shape to be [CHW]
-  tensor = tensor.permute([2, 0, 1]);
-
-  // Divide the tensor values by 255 to get values between [0, 1]
-  tensor = tensor.div(255);
-
-  // Crop the image in the center to be a squared image
-  const centerCrop = T.centerCrop(Math.min(width, height));
-  tensor = centerCrop(tensor);
-
-  // Resize the image tensor to 3 x 224 x 224
-  const resize = T.resize(224);
-  tensor = resize(tensor);
-
-  // Normalize the tensor image with mean and standard deviation
-  const normalize = T.normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]);
-  tensor = normalize(tensor);
-  // Unsqueeze adds 1 leading dimension to the tensor
-  tensor = tensor.unsqueeze(0);
-  console.log(tensor.shape);
-  tensor = torch.cat([torch.zeros([1, 3, 224, 224]), tensor]);
+  let allTensor = [];
+  for (let i = 0; i < image.length; i++) {
+    console.log(image[i]);
+    const width = image[i].getWidth();
+    const height = image[i].getHeight();
+    // Convert image to blob, which is a byte representation of the image
+    // in the format height (H), width (W), and channels (C), or HWC for short
+    const blob = media.toBlob(image[i]);
+    // Get a tensor from image the blob and also define in what format
+    // the image blob is.
+    let tensor = torch.fromBlob(blob, [height, width, 3]);
+    console.log(tensor.shape);
+    // Rearrange the tensor shape to be [CHW]
+    tensor = tensor.permute([2, 0, 1]);
+    // Divide the tensor values by 255 to get values between [0, 1]
+    tensor = tensor.div(255);
+    // Crop the image in the center to be a squared image
+    const centerCrop = T.centerCrop(Math.min(width, height));
+    console.log(centerCrop);
+    tensor = centerCrop(tensor);
+    // Resize the image tensor to 3 x 224 x 224
+    const resize = T.resize(224);
+    tensor = resize(tensor);
+    // Normalize the tensor image with mean and standard deviation
+    const normalize = T.normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]);
+    tensor = normalize(tensor);
+    // Unsqueeze adds 1 leading dimension to the tensor
+    tensor = tensor.unsqueeze(0);
+    allTensor.push(tensor);
+  }
+  let tensor = torch.cat(allTensor);
   console.log(tensor.shape);
   // 5. If the model has not been loaded already, it will be downloaded from
   // the URL and then loaded into memory.
@@ -161,15 +118,14 @@ export default async function encodeImage(image) {
 
     if (model_exist) {
       console.log("model exists");
-      filePath =
-        "/data/user/0/com.anonymous.gallery/cache/final_visual.ptl";
+      filePath = "/data/user/0/com.anonymous.gallery/cache/final_visual.ptl";
     } else {
-    try {
-      filePath = await MobileModel.download(MODEL_URL);
-    } catch (err) {
-      console.log(err);
+      try {
+        filePath = await MobileModel.download(MODEL_URL);
+      } catch (err) {
+        console.log(err);
+      }
     }
-    // }
     console.log(filePath);
     try {
       model = await torch.jit._loadForMobile(filePath);
@@ -195,7 +151,7 @@ export default async function encodeImage(image) {
   console.log(Array.from(output.matmul(textTensor).data())); // 1차원 배열
   let similarity = Array.from(output.matmul(textTensor).data());
   for (let i = 0; i < similarity.length; i++) {
-    similarity[i] = [similarity[i], i]; // <- 두번째에는 이미지 path 넣기
+    similarity[i] = [similarity[i], image[i]["uri"]]; // <- 두번째에는 이미지 path 넣기
   }
 
   // similarity 내림차순으로 정렬
@@ -203,10 +159,13 @@ export default async function encodeImage(image) {
     return a[0] < b[0];
   });
 
+  for (let i = 0; i < similarity.length; i++) {
+    similarity[i] = similarity[i][1]; // <- 두번째에는 이미지 path 넣기
+  }
   console.log(similarity);
   console.log(output.matmul(textTensor).shape);
 
   // 7. Get the index of the value with the highest probability
   // 8. Resolve the most likely class label and return it
-  return None;
+  return similarity;
 }

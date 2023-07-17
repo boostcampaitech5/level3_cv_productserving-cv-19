@@ -12,8 +12,11 @@ import {
   TouchableOpacity,
 } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
+import { SearchBar } from "react-native-elements";
 import { ImageUtil } from "react-native-pytorch-core";
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
+import ImgSearchBar from "./src/ImgSearchBar";
+import encodeImage from "./src/ImageEncoder";
 
 function uriWithoutSchema(uri) {
   return uri.substring("file://".length, uri.length);
@@ -22,6 +25,15 @@ function uriWithoutSchema(uri) {
 export default function App() {
   const [photos, setPhotos] = useState([]);
   const [imgUris, setImgUris] = useState([]);
+  // const [searchText, setSearchText] = useState("");
+  const [searchResults, setSeartchResults] = useState([]);
+  const searchText = async (text) => {
+    const result = await encodeImage(imgUris, text);
+    setSeartchResults(result);
+    console.log(text);
+    console.log("검색");
+    console.log(result[0]);
+  };
   useEffect(() => {
     // checkPermission();
     hasPermission();
@@ -44,21 +56,29 @@ export default function App() {
       first: 21,
       assetType: "Photos",
     })
-      .then((r) => {
-        console.log(JSON.stringify(r.edges));
+      .then(async (r) => {
+        // console.log(JSON.stringify(r.edges));
         let images = [];
         for (let i = 0; i < r.edges.length; i++) {
-          images.push(uriWithoutSchema(r.edges[i].node.image.uri));
+          let imageUri = uriWithoutSchema(r.edges[i].node.image.uri);
+          const imgInfo = await ImageUtil.fromFile(imageUri);
+          imgInfo["uri"] = r.edges[i].node.image.uri;
+          images.push(imgInfo);
         }
         setImgUris(images);
+
         console.log(images);
         setPhotos(r.edges);
+        console.log(r.edges[0].node.image.uri);
       })
       .catch((err) => {});
   };
   return (
     <View style={styles.container}>
-      {photos && (
+      <View style={styles.search}>
+        <ImgSearchBar searchText={searchText} />
+      </View>
+      {/* {photos && (
         <FlatList
           data={photos}
           numColumns={3}
@@ -82,6 +102,32 @@ export default function App() {
             );
           }}
           keyExtractor={(item) => item.node.image.uri}
+        />
+      )} */}
+      {searchResults && (
+        <FlatList
+          data={searchResults}
+          numColumns={3}
+          renderItem={({ item, index }) => {
+            return (
+              <View
+                style={{
+                  width: Dimensions.get("window").width / 3 - 6,
+                  height: Dimensions.get("window").width / 3 - 6,
+                  margin: 3,
+                  backgroundColor: "black",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  source={{ uri: item }}
+                  style={{ width: "95%", height: "95%" }}
+                />
+              </View>
+            );
+          }}
+          keyExtractor={(item) => item}
         />
       )}
       <TouchableOpacity
@@ -107,5 +153,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+  },
+  search: {
+    width: "100%",
+    backgroundColor: "#f2f2f2",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
 });
