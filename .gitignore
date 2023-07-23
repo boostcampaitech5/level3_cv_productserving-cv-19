@@ -15,3 +15,5 @@ web-build/
 android
 ios
 .expo
+.idea 
+#왜생겼지?
