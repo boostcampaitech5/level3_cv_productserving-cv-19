@@ -19,6 +19,8 @@ export default async function encodeImage(image) {
 
   let allTensor = [];
   let imagePath = [];
+  let tensor;
+  console.log("image의 개수는 ", image.length);
   for (let i = 0; i < image.length; i++) {
     tensor = preprocess(image[i]);
     allTensor.push(tensor);
@@ -30,18 +32,27 @@ export default async function encodeImage(image) {
   let serializedOutput;
   let output;
   let startTime = performance.now();
+  let sumtime = 0;
+  let check;
+  let initsumtime = 0;
   for (let j = 0; j<allTensor.length; j++){
     
     console.log("image.uri",imagePath[j]);
     serializedOutput = await AsyncStorage.getItem(`image_Value_${imagePath[j]}`);
     if (serializedOutput) {
+      let initstarts = performance.now();
       check = JSON.parse(serializedOutput);
       const sortedKeys = Object.keys(check).sort((a, b) => parseInt(a) - parseInt(b));
       const resultArray = sortedKeys.map((key) => check[key]);
       output = resultArray;
+      let initends = performance.now();
+      initsumtime += initends-initstarts;
       console.log("data exist");
     } else {
+      let starts = performance.now();
       const saveoutput = await loadModelAndForward(allTensor[j]);
+      let ends = performance.now();
+      sumtime += ends-starts;
       serializedOutput = JSON.stringify(saveoutput.data());
       await AsyncStorage.setItem(`image_Value_${imagePath[j]}`, serializedOutput);
       const newserializedOutput = await AsyncStorage.getItem(`image_Value_${imagePath[j]}`);
@@ -55,6 +66,7 @@ export default async function encodeImage(image) {
     outputTensor.push(output);
   }
   let endTime = performance.now();
+  console.log("sumtime:",sumtime,"initsumtime:",initsumtime);
   console.log(`모델 forward 하는데 걸린 작업 시간은 총 ${endTime - startTime} 밀리초입니다.`);
   // console.log(outputTensor.length,"행",outputTensor[0].length,"열");
   return outputTensor;
