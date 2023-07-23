@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Text, StyleSheet, Pressable, View, ScrollView, Image } from "react-native";
+import { Text, StyleSheet, Pressable, View, FlatList, Image } from "react-native";
 import * as MediaLibrary from "expo-media-library";
 
 const Images = ({ navigation, route }) => {
@@ -7,13 +7,8 @@ const Images = ({ navigation, route }) => {
   const [hasNextPage, setHasNextPage] = useState(true);
   const [images, setImages] = useState([]);
 
-  useEffect(() => {
-    setEndCursor("0");
-    setHasNextPage(true);
-    fetchImages();
-  }, [route.params]);
-
-  const fetchImages = async () => {
+  const loadImages = async () => {
+    if (!hasNextPage) return;
     let imageAssets = [];
     if (typeof route.params == "undefined") {
       imageAssets = await MediaLibrary.getAssetsAsync({
@@ -34,45 +29,43 @@ const Images = ({ navigation, route }) => {
     setImages((prevImages) => [...prevImages, ...imageAssets.assets]);
   };
 
-  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
-    const paddingToBottom = 20;
-    return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+  const renderItem = ({ item }) => {
+    return (
+      <Pressable
+        onPress={() => {
+          navigation.navigate("PreviewImage", {
+            imageUri: item.uri,
+          });
+        }}
+        style={{ ...styles.collection }}
+        android_ripple={{ color: "lightgray", borderless: true }}
+        key={item.id}
+      >
+        <Image source={{ uri: item.uri }} style={styles.image} />
+      </Pressable>
+    );
   };
+
+  useEffect(() => {
+    setEndCursor("0");
+    setHasNextPage(true);
+    loadImages();
+  }, [route.params]);
 
   return (
     <View style={styles.collectionComponent}>
       <View style={styles.header}>
         <Text style={styles.headerText}>모든 사진</Text>
       </View>
-
       <View style={styles.body}>
-        <ScrollView
-          onScroll={(event) => {
-            if (isCloseToBottom(event.nativeEvent) && hasNextPage) {
-              console.log(endCursor);
-              fetchImages();
-            }
-          }}
-          style={styles.scroll}
-          contentContainerStyle={styles.contentContainerStyle}
-        >
-          {images.map((item, index) => {
-            return (
-              <Pressable
-                onPress={() => {
-                  navigation.navigate("PreviewImage", {
-                    imageUri: item.uri,
-                  });
-                }}
-                style={{ ...styles.collection }}
-                android_ripple={{ color: "lightgray", borderless: true }}
-                key={index}
-              >
-                <Image source={{ uri: item.uri }} style={styles.image} />
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+        <FlatList
+          data={images}
+          numColumns={3}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          onEndReached={loadImages}
+          onEndReachedThreshold={0.1}
+        />
       </View>
     </View>
   );
@@ -117,8 +110,6 @@ const styles = StyleSheet.create({
   },
 
   collection: {
-    // borderColor: 'red',
-    // borderWidth: 1,
     height: 120,
     width: "33.33%",
   },

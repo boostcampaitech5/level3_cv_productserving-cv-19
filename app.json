@@ -27,8 +27,10 @@
       },
       "softwareKeyboardLayoutMode": "pan",
       "permissions": [
-        "READ_MEDIA_IMAGES", "READ_EXTERNAL_STORAGE"
-      ]
+        "READ_MEDIA_IMAGES",
+        "READ_EXTERNAL_STORAGE"
+      ],
+      "package": "com.vip.smartgallery"
     },
     "web": {
       "favicon": "./assets/favicon.png"

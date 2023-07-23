@@ -1,28 +1,130 @@
-import React, { useState, useEffect } from "react";
-import { TextInput, StyleSheet, Pressable, View, ScrollView, Image } from "react-native";
-import axios from "axios";
+import React, { useState } from "react";
+import { StyleSheet, Pressable, View, FlatList, Image, TextInput } from "react-native";
 import { SearchBar, Button } from "@rneui/themed";
-import Icon from "react-native-vector-icons/FontAwesome";
+// import encodeImage from "../component/ImageEncoder";
+import * as MediaLibrary from "expo-media-library";
+import { ImageUtil } from "react-native-pytorch-core";
+
+import { MobileModel, torch, torchvision, media } from "react-native-pytorch-core";
+
+function uriWithoutSchema(uri) {
+  return uri.substring("file://".length, uri.length);
+}
+
+function encodeImage(image, text) {
+  let tensor = [];
+  for (let i = 0; i < image.length; i++) {
+    console.log(image[i]);
+    const width = image[i].getWidth();
+    const height = image[i].getHeight();
+    // Convert image to blob, which is a byte representation of the image
+    // in the format height (H), width (W), and channels (C), or HWC for short
+    const blob = media.toBlob(image[i]);
+    // Get a tensor from image the blob and also define in what format
+    // the image blob is.
+    tensor = torch.fromBlob(blob, [height, width, 3]);
+    console.log(tensor.shape);
+    // Rearrange the tensor shape to be [CHW]
+    tensor = tensor.permute([2, 0, 1]);
+    // Divide the tensor values by 255 to get values between [0, 1]
+    tensor = tensor.div(255);
+    // Crop the image in the center to be a squared image
+    const centerCrop = torchvision.transforms.centerCrop(Math.min(width, height));
+    console.log(centerCrop);
+    tensor = centerCrop(tensor);
+    // Resize the image tensor to 3 x 224 x 224
+    const resize = torchvision.transforms.resize(224);
+    tensor = resize(tensor);
+    // Normalize the tensor image with mean and standard deviation
+    const normalize = torchvision.transforms.normalize(
+      [0.485, 0.456, 0.406],
+      [0.229, 0.224, 0.225]
+    );
+    tensor = normalize(tensor);
+    // Unsqueeze adds 1 leading dimension to the tensor
+    tensor = tensor.unsqueeze(0);
+    tensor = null;
+  }
+  return 0;
+}
 
 const Search = ({ navigation, route }) => {
-  const [images, setImages] = useState([]);
-  const [search, setSearch] = useState("");
+  const [searchText, setSearchText] = useState("");
+  const [imageInputs, setImageInputs] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
   const [isExtracted, setIsExtracted] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
-  const [pageNumber, setPageNumber] = useState(
-    (route && route.params && route.params.collectionIndex) || 0
-  );
 
-  useEffect(() => {
-    axios.get(`https://picsum.photos/v2/list?page=${pageNumber}&limit=20`).then((response) => {
-      const data = response && response.data;
-      setImages([...images, ...data]);
+  const extractFeature = async () => {
+    setIsExtracting(true);
+    let imageAssets = [];
+    let images = [];
+    imageAssets = await MediaLibrary.getAssetsAsync({
+      mediaType: "photo",
+      first: 100,
     });
-  }, [pageNumber]);
+    imageAssets = imageAssets.assets;
 
-  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }) => {
-    const paddingToBottom = 20;
-    return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+    for (let i = 0; i < imageAssets.length; i++) {
+      let imageUri = uriWithoutSchema(imageAssets[i].uri);
+      const imgInfo = await ImageUtil.fromFile(imageUri);
+      console.log(imgInfo);
+      imgInfo["uri"] = imageAssets[i].uri;
+      images.push(imgInfo);
+    }
+    console.log(imageInputs.length);
+    setImageInputs(images);
+    setIsExtracting(false);
+
+    const result = encodeImage(imageInputs, "text");
+    console.log(result);
+    setSearchResults(result);
+    console.log("완료");
+  };
+
+  // const extractFeature = async () => {
+  //   setIsExtracting(true);
+  //   let imageAssets = [];
+  //   let images = [];
+  //   imageAssets = await MediaLibrary.getAssetsAsync({
+  //     mediaType: "photo",
+  //     first: 30,
+  //   });
+  //   imageAssets = imageAssets.assets;
+
+  //   for (let i = 0; i < imageAssets.length; i++) {
+  //     let imageUri = uriWithoutSchema(imageAssets[i].uri);
+  //     const imgInfo = await ImageUtil.fromFile(imageUri);
+  //     console.log(imgInfo);
+  //     imgInfo["uri"] = imageAssets[i].uri;
+  //     images.push(imgInfo);
+  //   }
+  //   setImageInputs(images);
+  //   setIsExtracted(true);
+  // };
+
+  const searchImage = async (text) => {
+    const result = encodeImage(imageInputs, text);
+    console.log(result);
+    setSearchResults(result);
+    console.log("완료");
+  };
+
+  const renderItem = ({ item }) => {
+    return (
+      <Pressable
+        onPress={() => {
+          navigation.navigate("PreviewImage", {
+            imageUri: item.uri,
+          });
+        }}
+        style={{ ...styles.collection }}
+        android_ripple={{ color: "lightgray", borderless: true }}
+        key={item.id}
+      >
+        <Image source={{ uri: item }} style={styles.image} />
+      </Pressable>
+    );
   };
 
   return (
@@ -30,47 +132,22 @@ const Search = ({ navigation, route }) => {
       <View style={styles.header}>
         <SearchBar
           placeholder="검색어를 입력해주세요."
-          onChangeText={(text) => {
-            setSearch(text);
-          }}
-          value={search}
+          onChangeText={setSearchText}
+          value={searchText}
+          onSubmitEditing={searchImage}
           platform="ios"
         />
       </View>
 
       {isExtracted && (
         <View style={styles.body}>
-          <ScrollView
-            onScroll={(event) => {
-              console.log("scrolling");
-              if (isCloseToBottom(event.nativeEvent)) {
-                setPageNumber(pageNumber + 1);
-              }
-            }}
-            style={styles.scroll}
-            contentContainerStyle={styles.contentContainerStyle}
-          >
-            {images.map((item, index) => {
-              var imageURL = item.download_url;
-              imageURL = imageURL.substring(0, imageURL.lastIndexOf("/"));
-              imageURL = imageURL.substring(0, imageURL.lastIndexOf("/"));
-              imageURL = imageURL + "/200";
-              return (
-                <Pressable
-                  onPress={() => {
-                    navigation.navigate("PreviewImage", {
-                      previewURL: item.download_url,
-                    });
-                  }}
-                  style={{ ...styles.collection }}
-                  android_ripple={{ color: "lightgray", borderless: true }}
-                  key={index}
-                >
-                  <Image source={{ uri: imageURL }} style={styles.image} />
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+          {/* <FlatList
+            data={searchResults}
+            numColumns={3}
+            renderItem={renderItem}
+            keyExtractor={(item) => item}
+          /> */}
+          <Button buttonStyle={styles.button} title="이미지 전처리" onPress={searchImage} />
         </View>
       )}
       {isExtracted || (
@@ -79,13 +156,7 @@ const Search = ({ navigation, route }) => {
             <Button
               buttonStyle={styles.button}
               title="갤러리 이미지 분석"
-              onPress={() => {
-                setIsExtracting(true);
-                setTimeout(() => {
-                  alert("이미지 분석 완료");
-                  setIsExtracted(true);
-                }, 5000);
-              }}
+              onPress={extractFeature}
             />
           )}
           {isExtracting && (
@@ -133,8 +204,6 @@ const styles = StyleSheet.create({
   },
 
   collection: {
-    // borderColor: 'red',
-    // borderWidth: 1,
     height: 120,
     width: "33.33%",
   },
