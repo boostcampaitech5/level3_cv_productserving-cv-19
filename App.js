@@ -9,7 +9,7 @@ import {
   Platform,
   PermissionsAndroid,
   Dimensions,
-  TouchableOpacity,
+  TouchableOpacity
 } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 import { SearchBar } from "react-native-elements";
@@ -19,6 +19,8 @@ import ImgSearchBar from "./src/ImgSearchBar";
 import encodeImage from "./src/ImageEncoder";
 import { fetchTextTensor } from "./src/component/fetchTextTensor";
 import { computeSimilarity } from "./src/component/computeSimilarity";
+import * as Progress from 'react-native-progress';
+import ProgressCircle from 'react-native-progress/Circle';
 
 
 function uriWithoutSchema(uri) {
@@ -29,12 +31,17 @@ export default function App() {
   const [photos, setPhotos] = useState([]);
   const [imgUris, setImgUris] = useState([]);
   const [searchResults, setSeartchResults] = useState([]);
+  const [loading, setLoading] = useState(0);
 
   const searchText = async (text) => {
-
+    setSeartchResults([]);
+    setLoading(0.3);
     const imageresult = await encodeImage(imgUris);
+    setLoading(0.8);
     const textresult = await fetchTextTensor(text);
+    setLoading(0.9);
     const result = await computeSimilarity(imageresult, textresult.data(), imgUris);
+    setLoading(0);
     setSeartchResults(result);
     console.log(text);
     console.log("검색");
@@ -91,6 +98,18 @@ export default function App() {
       <View style={styles.search}>
         <ImgSearchBar searchText={searchText} />
       </View>
+      <ProgressCircle
+            percent={loading}
+            radius={50}
+            borderWidth={8}
+            color="#3399FF"
+            shadowColor="#999"
+            bgColor="#fff"
+            duration={3000}
+        >
+            <Text style={{ fontSize: 18 }}>{loading*100}</Text>
+        </ProgressCircle>
+      {/* {loading > 0 && <Progress.Bar progress={loading} width={200} />} */}
       {searchResults && (
         <FlatList
           data={searchResults}

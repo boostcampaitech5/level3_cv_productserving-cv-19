@@ -19,7 +19,10 @@
     "react-dom": "18.1.0",
     "react-native": "0.70.8",
     "react-native-elements": "^3.4.3",
-    "react-native-pytorch-core": "^0.2.4"
+    "react-native-progress": "^5.0.0",
+    "react-native-progress-circle": "^2.1.0",
+    "react-native-pytorch-core": "^0.2.4",
+    "react-native-svg": "^12.4.4"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

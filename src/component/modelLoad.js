@@ -1,7 +1,7 @@
 import { torch, MobileModel } from "react-native-pytorch-core";
 import * as FileSystem from "expo-file-system";
 
-const MODEL_URL = "http://101.101.219.90:30003/final_visual.ptl";
+const MODEL_URL = "http://101.101.219.90:30003/visual_mobile_clip_ori_cpu.ptl";
 
 let model = null;
 
@@ -9,13 +9,13 @@ export async function loadModelAndForward(tensor) {
   if (model == null) {
     console.log(MODEL_URL);
     let filePath = null;
-    const model_exist = await FileSystem.getInfoAsync(
-      "/data/user/0/com.anonymous.gallery/cache/final_visual.ptl"
+    const modelExist = await FileSystem.getInfoAsync(
+      FileSystem.cacheDirectory + "visual_mobile_clip_ori_cpu.ptl"
     );
 
-    if (model_exist) {
+    if (modelExist) {
       console.log("model exists");
-      filePath = "/data/user/0/com.anonymous.gallery/cache/final_visual.ptl";
+      filePath = "/data/user/0/com.anonymous.gallery/cache/visual_mobile_clip_ori_cpu.ptl";
     } else {
       try {
         filePath = await MobileModel.download(MODEL_URL);
@@ -41,6 +41,7 @@ export async function loadModelAndForward(tensor) {
   // Run the ML inference with the pre-processed image tensor
   try {
     output = await model.forward(tensor);
+    output = output["image_embeds"]
   } catch (e) {
     console.log(e);
   }

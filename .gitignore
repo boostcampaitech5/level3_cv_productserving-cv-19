@@ -12,7 +12,8 @@ web-build/
 
 # macOS
 .DS_Store
-android
+jisu_android
+jisu_node_modules
 ios
 .expo
 .idea 
