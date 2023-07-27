@@ -18,6 +18,7 @@
     "react": "18.1.0",
     "react-dom": "18.1.0",
     "react-native": "0.70.8",
+    "react-native-asset": "^2.1.1",
     "react-native-elements": "^3.4.3",
     "react-native-progress": "^5.0.0",
     "react-native-progress-circle": "^2.1.0",

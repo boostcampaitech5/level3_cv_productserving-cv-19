@@ -15,6 +15,7 @@ web-build/
 jisu_android
 jisu_node_modules
 ios
+android
 .expo
 .idea 
 #왜생겼지?

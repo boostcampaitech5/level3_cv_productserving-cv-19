@@ -20,13 +20,12 @@ export default async function encodeImage(image) {
   let allTensor = [];
   let imagePath = [];
   let tensor;
-  console.log("image의 개수는 ", image.length);
   for (let i = 0; i < image.length; i++) {
     tensor = preprocess(image[i]);
     allTensor.push(tensor);
     imagePath.push(image[i].uri);
   }
-  console.log("모델 전처리 완료");
+  console.log("모든 사진 전처리 완료");
 
   let outputTensor = [];
   let serializedOutput;
@@ -66,8 +65,8 @@ export default async function encodeImage(image) {
     outputTensor.push(output);
   }
   let endTime = performance.now();
-  console.log("sumtime:",sumtime,"initsumtime:",initsumtime);
-  console.log(`모델 forward 하는데 걸린 작업 시간은 총 ${endTime - startTime} 밀리초입니다.`);
+  console.log("sumtime:",sumtime/1000,"initsumtime:",initsumtime/1000);
+  console.log(`이미지가 이미지 인코더 모델에 forward 하는데 걸린 작업 시간은 총 ${(endTime - startTime)/1000}초입니다.`);
   // console.log(outputTensor.length,"행",outputTensor[0].length,"열");
   return outputTensor;
 }
