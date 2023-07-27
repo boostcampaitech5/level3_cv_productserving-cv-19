@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet,Dimensions, } from "react-native";
 import { SearchBar } from "react-native-elements";
 
 const ImgSearchBar = (props) => {
@@ -28,26 +28,28 @@ const ImgSearchBar = (props) => {
 
 const styles = StyleSheet.create({
   searchBar: {
-    // flex:2,
     backgroundColor: "#eee",
-    width: "100%",
+    width:Dimensions.get("window").width ,
     paddingHorizontal: "1%",
+    // paddingHorizontal: "1%",
     fontFamily: "SUITE-Regular",
     borderRadius: 10, // Add border radius for rounded corners
   },
   searchcontainer: {
-    // flex:2,
     backgroundColor: "#fff",
-    width: "100%",
+    // width: "100%",
+    padding:2,
+    // margin:2,
     alignItems: "center",
     justifyContent: "center",
     borderTopWidth: 0,
     borderBottomWidth: 0,
   },
   searchInputContainer: {
-    // flex:2,
     height: 60,
+    width:Dimensions.get("window").width - 4,
     backgroundColor: "#eee",
+    marginBottom:20,
     // borderWidth: 0.5, // Add border width
     borderColor: "#000", // Set border color to desired color
     borderRadius: 10, // Add border radius for rounded corners

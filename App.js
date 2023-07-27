@@ -9,8 +9,7 @@ import {
   Platform,
   PermissionsAndroid,
   Dimensions,
-  TouchableOpacity,
-  KeyboardAvoidingView
+  TouchableOpacity
 } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 import { SearchBar } from "react-native-elements";
@@ -20,8 +19,9 @@ import ImgSearchBar from "./src/ImgSearchBar";
 import encodeImage from "./src/ImageEncoder";
 import { fetchTextTensor } from "./src/component/fetchTextTensor";
 import { computeSimilarity } from "./src/component/computeSimilarity";
-import * as Progress from "react-native-progress";
-import ProgressCircle from "react-native-progress/Circle";
+import * as Progress from 'react-native-progress';
+import ProgressCircle from 'react-native-progress/Circle';
+
 
 function uriWithoutSchema(uri) {
   return uri.substring("file://".length, uri.length);
@@ -36,11 +36,13 @@ export default function App() {
   const [existsearchbar, setexistsearchbar] = useState(1);
 
   const searchText = async (text) => {
+    setLoading(0.3);
     setSeartchResults([]);
     setLoading(0.5);
     const textresult = await fetchTextTensor(text);
-    setLoading(0.8);
+    setLoading(0.7);
     const result = await computeSimilarity(imgresults, textresult.data(), imgUris);
+    setLoading(0.8);
     setLoading(0);
     setSeartchResults(result);
     console.log(text);
@@ -50,7 +52,7 @@ export default function App() {
   useEffect(() => {
     hasPermission();
   }, []);
-
+  
   const hasPermission = async () => {
     const permission =
       Platform.Version >= 33
@@ -95,88 +97,77 @@ export default function App() {
         setLoading(0.9);
         setimgresults(imageresult);
         setLoading(0);
+        
       })
       .catch((err) => {});
   };
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : null}
-    >
+    <View style={styles.container}>
       <View style={styles.search}>
         {existsearchbar == 1 && <ImgSearchBar searchText={searchText} />}
       </View>
-      <View style={styles.body}>
-        {imgresults.length != 0 && loading > 0 && (
-          <Progress.Bar progress={loading} width={200} height={10} style={{position: 'absolute', left: Dimensions.get("window").width/2, height: Dimensions.get("window").height/2,justifyContent:'center',alignItems:'center'}} />
-        )}
-        {imgresults && (
-          <FlatList
-            data={searchResults}
-            numColumns={3}
-            renderItem={({ item, index }) => {
-              return (
-                <View
-                  style={{
-                    width: Dimensions.get("window").width / 3 - 6,
-                    height: Dimensions.get("window").width / 3 - 6,
-                    margin: 2,
-                    backgroundColor: "black",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Image source={{ uri: item }} style={{ width: "97%", height: "97%" }} />
-                </View>
-              );
-            }}
-            keyExtractor={(item) => item}
-          />
-        )}
-        {imgresults.length == 0 && (
-          <TouchableOpacity
-            onPress={() => getAllPhotos()}
-            style={{
-              backgroundColor: "#5bb5d3",
-              bottom: 30,
-              height: 40,
-              borderRadius: 7,
-              padding: 12,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              style={{
-                color: "white",
-                fontFamily: "SUITE-Regular",
-                backgroundColor: "#5bb5d3",
-                fontSize: 16,
-              }}
-            >
-              갤러리 이미지 분석하기
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    {/* </View> */}
-    </KeyboardAvoidingView>
+      {imgresults.length != 0 && loading > 0 && <Progress.Bar progress={loading} width={200} height={10} top="250%" />}
+      {imgresults && (
+        <FlatList
+          data={searchResults}
+          numColumns={3}
+          renderItem={({ item, index }) => {
+            return (
+              <View
+                style={{
+                  width: "33.333%",
+                  height: Dimensions.get("window").width / 3 ,
+                  // margin: 1,
+                  // backgroundColor: "black",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  source={{ uri: item }}
+                  style={{ width: "99%", height: "99%" }}
+                />
+              </View>
+            );
+          }}
+          keyExtractor={(item) => item}
+        />
+      )}
+      {imgresults.length == 0 &&
+      <TouchableOpacity
+        onPress={() => getAllPhotos()}
+        style={{
+          backgroundColor: "#5bb5d3",
+          bottom: 30,
+          height: 40,
+          borderRadius: 7,
+          padding:12,
+          alignItems: "center",
+          justifyContent: "center",
+          // position: 'absolute', 
+          // left: Dimensions.get("window").width/2, 
+          top: "200%",
+          // height: Dimensions.get("window").height/2, 
+        }}
+      >
+        <Text style={{ color: "white", fontFamily:"SUITE-Regular" ,backgroundColor:"#5bb5d3", fontSize:16}}>갤러리 이미지 분석하기</Text>
+      </TouchableOpacity>}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 2,
+    // margin:"10",
+    marginVertical:10,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
   search: {
-    flex: 1,
+    // flex: 1,
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: "pink",
   },
-  body: {
-    flex: 9,
-  },
-});
+})
