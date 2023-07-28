@@ -43,10 +43,14 @@
 | 이강민 | 모델링           |
 | 전지수 | 앱 개발          |
 
-## Reasons for choosing the project topic
+## 문제 정의
 
 <img src="./assets/github_assets/intro2.png"/>
 <img src="./assets/github_assets/problem2.png"/>
+
+## 서비스 아키텍처
+
+<img src="./assets/github_assets/serviecearchitecture.png"/>
 
 ## 모델 성능 비교
 
@@ -54,7 +58,7 @@
 
 ## Tech Skill
 
-<img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=PyTorch&logoColor=white"> <img src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white"> <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white"> <img src="https://img.shields.io/badge/React Native-61DAFB?style=for-the-badge&logo=React&logoColor=white"> <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white"> <img src="https://img.shields.io/badge/Numpy-013243?style=for-the-badge&logo=Numpy&logoColor=white"> <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=Pandas&logoColor=white">
+<img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=PyTorch&logoColor=white"> <img src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white"> <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=FastAPI&logoColor=white"> <img src="https://img.shields.io/badge/React Native-61DAFB?style=for-the-badge&logo=React&logoColor=white"> <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white">
 
 ---
 
@@ -82,7 +86,7 @@
 ## Usage
 
 Mac OS version<br/>
-INSTALL : Node.js, JAVA 11 SDK, X Code, CocoaPods, watchman, Android Studio, Typescript
+Install : Node.js, JAVA 11 SDK, X Code, CocoaPods, watchman, Android Studio, Typescript
 
 ```bash
 $ git clone https://github.com/boostcampaitech5/level3_cv_productserving-cv-19.git
@@ -92,4 +96,4 @@ $ npm run android
 
 ## 시연 영상
 
-<img src="./assets/github_assets/demon.gif" width="200" />
+<img src="./assets/github_assets/demon.gif" width="200" /><br/>
