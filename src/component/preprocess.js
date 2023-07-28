@@ -1,13 +1,9 @@
 import { torch, torchvision, media } from "react-native-pytorch-core";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, {useState} from 'react';
 const T = torchvision.transforms;
 
 
 export function preprocess(image, size = 224) {
   
-  let ssstartTime = performance.now();
-  // console.log("image.uri",image.uri);
   const width = image.getWidth();
   const height = image.getHeight();
   const blob = media.toBlob(image);
@@ -25,8 +21,6 @@ export function preprocess(image, size = 224) {
   tensor = normalize(tensor);
   tensor = tensor.unsqueeze(0);
   
-  let eeendTime = performance.now();
-  // console.log(`모델 전처리 하는데 걸린 작업 시간은 총 ${eeendTime - ssstartTime} 밀리초입니다.`);
 
   return tensor;
 }

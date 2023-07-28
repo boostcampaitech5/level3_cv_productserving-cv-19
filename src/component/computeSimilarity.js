@@ -1,4 +1,3 @@
-import { torch, torchvision } from "react-native-pytorch-core";
 export function computeSimilarity(output, textTensor, image) {
     let sisstartTime = performance.now();
     const result = [];

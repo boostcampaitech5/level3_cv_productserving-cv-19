@@ -1,22 +1,11 @@
 // 1. Add import for MobileModel from PlayTorch SDK
-import {torch} from "react-native-pytorch-core";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { preprocess } from "./component/preprocess";
-import { fetchTextTensor } from "./component/fetchTextTensor";
 import { loadModelAndForward } from "./component/modelLoad";
-import { computeSimilarity } from "./component/computeSimilarity";
-const texts = [
-  "A photo of a animal",
-  "A photo of a food",
-  "A photo of a human",
-  "A photo of a indoor",
-  "A photo of a outdoor",
-];
 
 
 export default async function encodeImage(image) {
   // Get image width and height
-
   let allTensor = [];
   let imagePath = [];
   let tensor;
@@ -67,6 +56,5 @@ export default async function encodeImage(image) {
   let endTime = performance.now();
   console.log("sumtime:",sumtime/1000,"initsumtime:",initsumtime/1000);
   console.log(`이미지가 이미지 인코더 모델에 forward 하는데 걸린 작업 시간은 총 ${(endTime - startTime)/1000}초입니다.`);
-  // console.log(outputTensor.length,"행",outputTensor[0].length,"열");
   return outputTensor;
 }

@@ -1,6 +1,4 @@
-import { StatusBar } from "expo-status-bar";
 import {
-  Button,
   Image,
   StyleSheet,
   Text,
@@ -12,7 +10,6 @@ import {
   TouchableOpacity
 } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
-import { SearchBar } from "react-native-elements";
 import { ImageUtil } from "react-native-pytorch-core";
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import ImgSearchBar from "./src/ImgSearchBar";
@@ -20,7 +17,6 @@ import encodeImage from "./src/ImageEncoder";
 import { fetchTextTensor } from "./src/component/fetchTextTensor";
 import { computeSimilarity } from "./src/component/computeSimilarity";
 import * as Progress from 'react-native-progress';
-import ProgressCircle from 'react-native-progress/Circle';
 
 
 function uriWithoutSchema(uri) {
@@ -117,8 +113,6 @@ export default function App() {
                 style={{
                   width: "33.333%",
                   height: Dimensions.get("window").width / 3 ,
-                  // margin: 1,
-                  // backgroundColor: "black",
                   justifyContent: "center",
                   alignItems: "center",
                 }}
@@ -144,10 +138,7 @@ export default function App() {
           padding:12,
           alignItems: "center",
           justifyContent: "center",
-          // position: 'absolute', 
-          // left: Dimensions.get("window").width/2, 
           top: "200%",
-          // height: Dimensions.get("window").height/2, 
         }}
       >
         <Text style={{ color: "white", fontFamily:"SUITE-Regular" ,backgroundColor:"#5bb5d3", fontSize:16}}>갤러리 이미지 분석하기</Text>
@@ -158,15 +149,12 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 2,
-    // margin:"10",
     marginVertical:10,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
   search: {
-    // flex: 1,
     width: "100%",
     backgroundColor: "pink",
   },

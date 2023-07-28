@@ -26,7 +26,6 @@ export async function loadModelAndForward(tensor) {
         console.log(err);
       }
     }
-    // console.log(filePath);
     try {
       let ssstartTime = performance.now();
       model = await torch.jit._loadForMobile(filePath);

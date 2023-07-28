@@ -31,15 +31,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
     width:Dimensions.get("window").width ,
     paddingHorizontal: "1%",
-    // paddingHorizontal: "1%",
     fontFamily: "SUITE-Regular",
     borderRadius: 10, // Add border radius for rounded corners
   },
   searchcontainer: {
     backgroundColor: "#fff",
-    // width: "100%",
     padding:2,
-    // margin:2,
     alignItems: "center",
     justifyContent: "center",
     borderTopWidth: 0,
@@ -50,10 +47,8 @@ const styles = StyleSheet.create({
     width:Dimensions.get("window").width - 4,
     backgroundColor: "#eee",
     marginBottom:20,
-    // borderWidth: 0.5, // Add border width
     borderColor: "#000", // Set border color to desired color
     borderRadius: 10, // Add border radius for rounded corners
-    // borderBottomWidth: 0.5, // Add bottom border
   },
 });
 
