@@ -9,7 +9,7 @@ import {
   Platform,
   PermissionsAndroid,
   Dimensions,
-  TouchableOpacity,
+  TouchableOpacity
 } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 import { SearchBar } from "react-native-elements";
@@ -19,6 +19,8 @@ import ImgSearchBar from "./src/ImgSearchBar";
 import encodeImage from "./src/ImageEncoder";
 import { fetchTextTensor } from "./src/component/fetchTextTensor";
 import { computeSimilarity } from "./src/component/computeSimilarity";
+import * as Progress from 'react-native-progress';
+import ProgressCircle from 'react-native-progress/Circle';
 
 
 function uriWithoutSchema(uri) {
@@ -28,13 +30,20 @@ function uriWithoutSchema(uri) {
 export default function App() {
   const [photos, setPhotos] = useState([]);
   const [imgUris, setImgUris] = useState([]);
+  const [imgresults, setimgresults] = useState([]);
   const [searchResults, setSeartchResults] = useState([]);
+  const [loading, setLoading] = useState(0);
+  const [existsearchbar, setexistsearchbar] = useState(1);
 
   const searchText = async (text) => {
-
-    const imageresult = await encodeImage(imgUris);
+    setLoading(0.3);
+    setSeartchResults([]);
+    setLoading(0.5);
     const textresult = await fetchTextTensor(text);
-    const result = await computeSimilarity(imageresult, textresult.data(), imgUris);
+    setLoading(0.7);
+    const result = await computeSimilarity(imgresults, textresult.data(), imgUris);
+    setLoading(0.8);
+    setLoading(0);
     setSeartchResults(result);
     console.log(text);
     console.log("검색");
@@ -58,14 +67,13 @@ export default function App() {
   };
   const getAllPhotos = () => {
     CameraRoll.getPhotos({
-      first: 51,
+      first: 200,
       assetType: "Photos",
     })
       .then(async (r) => {
-        console.log("이미지 처리중");
+        console.log("최신 이미지 Info 처리 시작");
         console.log(JSON.stringify(r.edges));
         let images = [];
-        console.log("n번만큼 반복문 실행",r.edges.length);
         for (let i = 0; i < r.edges.length; i++) {
           let imageUri = uriWithoutSchema(r.edges[i].node.image.uri);
           // console.log("imageUri",imageUri);
@@ -79,19 +87,27 @@ export default function App() {
         }
 
         setImgUris(images);
-
-        console.log(images);
+        setLoading(0.3);
+        console.log("최신 이미지 Info 처리 완료");
         setPhotos(r.edges);
-        console.log(r.edges[0].node.image.uri);
+        setLoading(0.5);
+        console.log("최신 이미지 Info Device Storage 저장 완료");
+        setLoading(0.7);
+        const imageresult = await encodeImage(imgUris);
+        setLoading(0.9);
+        setimgresults(imageresult);
+        setLoading(0);
+        
       })
       .catch((err) => {});
   };
   return (
     <View style={styles.container}>
       <View style={styles.search}>
-        <ImgSearchBar searchText={searchText} />
+        {existsearchbar == 1 && <ImgSearchBar searchText={searchText} />}
       </View>
-      {searchResults && (
+      {imgresults.length != 0 && loading > 0 && <Progress.Bar progress={loading} width={200} height={10} top="250%" />}
+      {imgresults && (
         <FlatList
           data={searchResults}
           numColumns={3}
@@ -99,17 +115,17 @@ export default function App() {
             return (
               <View
                 style={{
-                  width: Dimensions.get("window").width / 3 - 6,
-                  height: Dimensions.get("window").width / 3 - 6,
-                  margin: 2,
-                  backgroundColor: "black",
+                  width: "33.333%",
+                  height: Dimensions.get("window").width / 3 ,
+                  // margin: 1,
+                  // backgroundColor: "black",
                   justifyContent: "center",
                   alignItems: "center",
                 }}
               >
                 <Image
                   source={{ uri: item }}
-                  style={{ width: "97%", height: "97%" }}
+                  style={{ width: "99%", height: "99%" }}
                 />
               </View>
             );
@@ -117,35 +133,41 @@ export default function App() {
           keyExtractor={(item) => item}
         />
       )}
-      
+      {imgresults.length == 0 &&
       <TouchableOpacity
         onPress={() => getAllPhotos()}
         style={{
-          backgroundColor: "#000",
+          backgroundColor: "#5bb5d3",
           bottom: 30,
-          height: 50,
-          borderRadius: 10,
+          height: 40,
+          borderRadius: 7,
+          padding:12,
           alignItems: "center",
           justifyContent: "center",
+          // position: 'absolute', 
+          // left: Dimensions.get("window").width/2, 
+          top: "200%",
+          // height: Dimensions.get("window").height/2, 
         }}
       >
-        <Text style={{ color: "#fff" }}>Sync Photos From Gallery</Text>
-      </TouchableOpacity>
+        <Text style={{ color: "white", fontFamily:"SUITE-Regular" ,backgroundColor:"#5bb5d3", fontSize:16}}>갤러리 이미지 분석하기</Text>
+      </TouchableOpacity>}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 2,
+    // margin:"10",
+    marginVertical:10,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
   search: {
+    // flex: 1,
     width: "100%",
-    backgroundColor: "#f2f2f2",
-    paddingHorizontal: 5,
-    paddingVertical: 4,
+    backgroundColor: "pink",
   },
-});
+})
